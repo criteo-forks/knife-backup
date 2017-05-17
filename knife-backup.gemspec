@@ -21,4 +21,5 @@ Gem::Specification.new do |s|
 
   s.add_dependency "chef", ">= 0.10.10"
   s.add_dependency "chef-dk"
+  s.add_dependency "mixlib-archive", "= 0.2.0"
 end
