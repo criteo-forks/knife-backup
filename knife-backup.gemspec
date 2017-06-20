@@ -21,5 +21,9 @@ Gem::Specification.new do |s|
 
   s.add_dependency "chef", ">= 0.10.10"
   s.add_dependency "chef-dk"
+  # Restriction required because Chef Client 12.18.31, which we use
+  # on Chef Servers, requires version 0.2.0. For local usage, this
+  # restriction is not necessary.
+  # TODO: Find a way to avoid version restriction
   s.add_dependency "mixlib-archive", "= 0.2.0"
 end
