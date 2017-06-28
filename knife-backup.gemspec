@@ -26,4 +26,6 @@ Gem::Specification.new do |s|
   # restriction is not necessary.
   # TODO: Find a way to avoid version restriction
   s.add_dependency "mixlib-archive", "= 0.2.0"
+  # To avoid net-ssh-gateway version conflict
+  s.add_dependency "chef-provisioning", "< 2.4.0"
 end
