@@ -83,7 +83,7 @@ module ServerBackup
     def policies
       ui.info "=== Restoring policies ==="
       Dir.glob(File.join(config[:backup_dir], "policies", "*")).each do |group_dir|
-        Dir.glob(File.join(group_dir, "*", "policyfile", "*")).each do |policyfile_lock|
+        Dir.glob(File.join(group_dir, "*", "policyfile", "*.lock.json")).each do |policyfile_lock|
           p_name  = File.basename(policyfile_lock, ".lock.json")
           p_group = File.basename(group_dir)
           ui.info "Restoring policyfile #{p_group}:#{p_name}"

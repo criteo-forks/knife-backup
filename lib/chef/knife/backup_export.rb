@@ -110,9 +110,10 @@ module ServerBackup
           # Create directory structure
           dir            = File.join(config[:backup_dir], "policies", p_group, p_name)
           policyfile_dir = File.join(dir, "policyfile")
-          site_cb_dir    = File.join(dir, "site-cookbooks")
+          site_cb_dir    = File.join(policyfile_dir, "cookbooks")
           lock_file      = File.join(policyfile_dir, "#{p_name}.lock.json")
-          [policyfile_dir, site_cb_dir].each { |d| FileUtils.mkdir_p(d) }
+          FileUtils.mkdir_p(policyfile_dir)
+          FileUtils.ln_s(File.expand_path(policyfile_dir), site_cb_dir)
 
           # Download policyfile lock
           redirect_stdout(lock_file) do
@@ -127,7 +128,6 @@ module ServerBackup
           # Download policy related cookbooks
           #
           policy_cookbooks(JSON.parse(File.read(lock_file)), p_name, p_group, dir)
-
 
           # Find site cookbooks and move to different dir
           filter_site_cookbooks(lock_file).each do |cookbook|
