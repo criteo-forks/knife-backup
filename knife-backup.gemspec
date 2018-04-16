@@ -19,7 +19,7 @@ Gem::Specification.new do |s|
   s.executables   = `git ls-files -- bin/*`.split("\n").map{ |f| File.basename(f) }
   s.require_paths = ["lib"]
 
-  s.add_dependency "chef", ">= 0.10.10"
-  s.add_dependency "chef-dk"
-  s.add_dependency "mixlib-archive", "= 0.2.0"
+  s.add_dependency "chef", ">= 12.18.31"
+  s.add_dependency "chef-dk", '>= 2'
+  s.add_dependency "mixlib-archive"
 end

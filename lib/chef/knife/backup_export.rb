@@ -125,7 +125,9 @@ module ServerBackup
           end
 
           # Download policy related cookbooks
-          policy_cookbooks(p_name, p_group, dir)
+          #
+          policy_cookbooks(JSON.parse(File.read(lock_file)), p_name, p_group, dir)
+
 
           # Find site cookbooks and move to different dir
           filter_site_cookbooks(lock_file).each do |cookbook|
@@ -152,7 +154,7 @@ module ServerBackup
       retval
     end
 
-    def policy_cookbooks(policy_name, policy_group, cookbook_path)
+    def policy_cookbooks(lock, policy_name, policy_group, cookbook_path)
       Chef::Config[:policy_name]     = policy_name
       Chef::Config[:policy_group]    = policy_group
       Chef::Config[:file_cache_path] = cookbook_path
@@ -161,6 +163,11 @@ module ServerBackup
       )
       builder.select_implementation(nil)
       builder.sync_cookbooks
+      Dir.glob(File.join(cookbook_path, 'cookbooks', '*')).each do |ck|
+        next if lock['cookbook_locks'][File.basename(ck)]['source_options']['path'] # cookbooks referred by path
+        new_dir = File.join(File.dirname(ck), lock['cookbook_locks'][File.basename(ck)]['cache_key'])
+        FileUtils.mv(ck, new_dir)
+      end
     end
 
     def filter_site_cookbooks(policyfile_lock)

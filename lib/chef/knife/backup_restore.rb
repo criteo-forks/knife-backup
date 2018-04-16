@@ -35,6 +35,9 @@ module ServerBackup
       require 'chef-dk/policyfile/uploader'
       require 'securerandom'
       require 'json'
+      require 'chef-dk/policyfile/storage_config'
+      require 'chef-dk/policyfile_lock'
+      require 'chef-dk/authenticated_http'
     end
 
     banner "knife backup restore [COMPONENT [COMPONENT ...]] [-D DIR] (options)"
@@ -85,7 +88,11 @@ module ServerBackup
           p_group = File.basename(group_dir)
           ui.info "Restoring policyfile #{p_group}:#{p_name}"
           # Create PolicyfileLock object from lock file
-          storage_config = ChefDK::Policyfile::StorageConfig.new
+          policy_dir = File.dirname(File.dirname(policyfile_lock))
+          puts File.join(policy_dir, 'cookbooks')
+          storage_config = ChefDK::Policyfile::StorageConfig.new(
+            cache_path: File.join(policy_dir, 'cookbooks')
+          )
           storage_config.use_policyfile(policyfile_lock)
           lock = ChefDK::PolicyfileLock.new(
             storage_config,
