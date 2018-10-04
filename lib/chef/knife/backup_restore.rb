@@ -87,26 +87,32 @@ module ServerBackup
           p_name  = File.basename(policyfile_lock, ".lock.json")
           p_group = File.basename(group_dir)
           ui.info "Restoring policyfile #{p_group}:#{p_name}"
-          # Create PolicyfileLock object from lock file
           policy_dir = File.dirname(File.dirname(policyfile_lock))
-          puts File.join(policy_dir, 'cookbooks')
-          storage_config = ChefDK::Policyfile::StorageConfig.new(
-            cache_path: File.join(policy_dir, 'cookbooks')
-          )
-          storage_config.use_policyfile(policyfile_lock)
-          lock = ChefDK::PolicyfileLock.new(
-            storage_config,
-            ui: ui
-          ).build_from_lock_data(JSON.parse(File.read(policyfile_lock)))
-          # Authenticate and upload policy
-          ChefDK::AuthenticatedHTTP.new(
-            Chef::Config.chef_server_url,
-            signing_key_filename: Chef::Config.client_key,
-            client_name: Chef::Config.node_name
-          ).put(
-            "/policy_groups/#{p_group}/policies/#{p_name}",
-            lock.to_lock
-          )
+          Dir.chdir(policy_dir) do
+            fake_ck_path = File.join('policyfile', 'cookbooks')
+            # symlink from the archive is likely broken
+            FileUtils.rm(fake_ck_path) if File.symlink?(fake_ck_path)
+            File.symlink('.', fake_ck_path)
+            # Create PolicyfileLock object from lock file
+            relative_policyfile_lock = Pathname.new(policyfile_lock).relative_path_from(Pathname.new(policy_dir)).to_s
+            storage_config = ChefDK::Policyfile::StorageConfig.new(
+              cache_path: 'cookbooks'
+            )
+            storage_config.use_policyfile(relative_policyfile_lock)
+            lock = ChefDK::PolicyfileLock.new(
+              storage_config,
+              ui: ui
+            ).build_from_lock_data(JSON.parse(File.read(relative_policyfile_lock)))
+            # Authenticate and upload policy
+            ChefDK::AuthenticatedHTTP.new(
+              Chef::Config.chef_server_url,
+              signing_key_filename: Chef::Config.client_key,
+              client_name: Chef::Config.node_name
+            ).put(
+              "/policy_groups/#{p_group}/policies/#{p_name}",
+              lock.to_lock
+            )
+          end
         end
       end
     end
